@@ -6,6 +6,7 @@ pipeline {
         IMAGE_NAME = 'employees-management-app'
         CONTAINER_NAME = 'employees-app'
         SERVER_PORT = '8085'
+        BUILD_NUMBER = "123"
     }
 
     stages {
@@ -48,19 +49,20 @@ pipeline {
         stage("Build Docker Image") {
             steps {
                 echo "🔨 Building Docker image..."
-                sh "docker build -t ${env.IMAGE_NAME}:${env.BUILD_NUMBER} ${env.BACKEND_DIR}"
-                sh "docker tag ${env.IMAGE_NAME}:${env.BUILD_NUMBER} ${env.IMAGE_NAME}:latest"
+                sh "docker-compose up --build -d"
+                // sh "docker build -t ${env.IMAGE_NAME}:${env.BUILD_NUMBER} ${env.BACKEND_DIR}"
+                // sh "docker tag ${env.IMAGE_NAME}:${env.BUILD_NUMBER} ${env.IMAGE_NAME}:latest"
             }
         }
 
-        stage("Run Container") {
-            steps {
-                echo "🚀 Running container..."
-                sh "docker stop ${env.CONTAINER_NAME} || true"
-                sh "docker rm ${env.CONTAINER_NAME} || true"
-                sh "docker run -d -p ${env.SERVER_PORT}:${env.SERVER_PORT} --name ${env.CONTAINER_NAME} -e SERVER_PORT=${env.SERVER_PORT} ${env.IMAGE_NAME}:latest"
-            }
-        }
+        // stage("Run Container") {
+        //     steps {
+        //         echo "🚀 Running container..."
+        //         sh "docker stop ${env.CONTAINER_NAME} || true"
+        //         sh "docker rm ${env.CONTAINER_NAME} || true"
+        //         sh "docker run -d -p ${env.SERVER_PORT}:${env.SERVER_PORT} --name ${env.CONTAINER_NAME} -e SERVER_PORT=${env.SERVER_PORT} ${env.IMAGE_NAME}:latest"
+        //     }
+        // }
 
         stage("Test API") {
             steps {
@@ -73,10 +75,11 @@ pipeline {
     post {
         always {
             echo "🧹 Cleaning up Docker resources..."
-            sh "docker stop ${env.CONTAINER_NAME} || true"
-            sh "docker rm ${env.CONTAINER_NAME} || true"
-            sh "docker rmi ${env.IMAGE_NAME}:${env.BUILD_NUMBER} || true"
-            sh "docker rmi ${env.IMAGE_NAME}:latest || true"
+            sh "docker-compose down"
+            // sh "docker stop ${env.CONTAINER_NAME} || true"
+            // sh "docker rm ${env.CONTAINER_NAME} || true"
+            // sh "docker rmi ${env.IMAGE_NAME}:${env.BUILD_NUMBER} || true"
+            // sh "docker rmi ${env.IMAGE_NAME}:latest || true"
         }
     }
 }
