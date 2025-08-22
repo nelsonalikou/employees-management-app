@@ -35,10 +35,7 @@ pipeline {
         stage('Unit Tests') {
             steps {
                 echo 'Testing...'
-                sh '''
-                    chmod +x mvnw
-                    'cd backend && ./mvnw test'
-                '''
+                sh 'cd backend && ./mvnw test'
             }
         }
 
