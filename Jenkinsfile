@@ -10,9 +10,9 @@ pipeline {
                 sh '''
                 docker version
                 docker info
-                docker compose version
+                docker-compose version
                 curl --version
-                jq --version 
+                jq --version
                 '''
             }
         }
@@ -36,8 +36,8 @@ pipeline {
         stage('Deploy') {
             steps {
                 echo 'Deploying...'
-                sh 'docker compose up -d --no-color --wait'
-                sh 'docker compose ps'
+                sh 'docker-compose up -d --no-color --wait'
+                sh 'docker-compose ps'
             }
         }
         stage('Run tests against the container') {
@@ -55,7 +55,7 @@ pipeline {
     // Cleanup
     post {
         always {
-            sh 'docker compose ps'
+            sh 'docker-compose ps'
         }
     }
 }
