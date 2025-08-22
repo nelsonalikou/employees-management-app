@@ -20,17 +20,17 @@ pipeline {
             }
         }
 
-        // stage('Build Backend') {
-        //     steps {
-        //         echo 'Building...'
-        //         dir("${env.BACKEND_DIR}") {
-        //             sh '''
-        //             chmod +x mvnw
-        //             ./mvnw clean package -DskipTests
-        //             '''
-        //         }
-        //     }
-        // }
+        stage('Build Backend') {
+            steps {
+                echo 'Building...'
+                dir("${env.BACKEND_DIR}") {
+                    sh '''
+                    chmod +x mvnw
+                    ./mvnw clean package -DskipTests
+                    '''
+                }
+            }
+        }
 
         stage('Unit Tests') {
             steps {
