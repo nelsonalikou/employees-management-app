@@ -3,8 +3,9 @@ pipeline {
 
     environment {
         BACKEND_DIR = 'backend'
-        IMAGE_NAME  = 'employees-management-app'
+        IMAGE_NAME = 'employees-management-app'
         CONTAINER_NAME = 'employees-app'
+        SERVER_PORT = '8085'
     }
 
     stages {
@@ -22,6 +23,9 @@ pipeline {
 
         stage('Build Backend') {
             steps {
+                environment {
+                    SERVER_PORT = '8081'
+                }
                 echo 'Building...'
                 dir("${env.BACKEND_DIR}") {
                     sh '''
@@ -56,8 +60,8 @@ pipeline {
                 script {
                     echo "🚀 Starting container..."
                     def appImage = docker.image("${IMAGE_NAME}:latest")
-                    // Run in detached mode, mapped port 8081
-                    appImage.run("-d -p 8081:8081 --name ${CONTAINER_NAME}")
+                    // Run in detached mode, mapped port 8085, and passing the SERVER_PORT env var
+                    appImage.run("-d -p ${SERVER_PORT}:${SERVER_PORT} --name ${CONTAINER_NAME} -e SERVER_PORT=${SERVER_PORT}")
                 }
             }
         }
@@ -67,7 +71,7 @@ pipeline {
                 script {
                     echo "🧪 Running API test..."
                     try {
-                        sh 'curl -f http://localhost:8081/employees | jq'
+                        sh "curl -f http://localhost:${SERVER_PORT}/employees | jq"
                     } catch (Exception e) {
                         error("❌ API endpoint returned a non-200 status code.")
                     }
