@@ -9,7 +9,7 @@ pipeline {
     }
 
     stages {
-        stage("verify tooling") {
+        stage("Verify Tooling") {
             steps {
                 sh '''
                 docker version
@@ -26,7 +26,7 @@ pipeline {
                 SERVER_PORT = '8081'
             }
             steps {
-                echo 'Building...'
+                echo 'Building backend...'
                 dir("${env.BACKEND_DIR}") {
                     sh '''
                     chmod +x mvnw
@@ -38,60 +38,45 @@ pipeline {
 
         stage('Unit Tests') {
             steps {
-                echo 'Testing...'
-                sh 'cd backend && ./mvnw test'
+                echo 'Running unit tests...'
+                dir("${env.BACKEND_DIR}") {
+                    sh './mvnw test'
+                }
             }
         }
 
         stage("Build Docker Image") {
             steps {
-                script {
-                    echo "🔨 Building Docker image..."
-                    // Build a fresh image with unique tag per Jenkins build
-                    def appImage = docker.build("${IMAGE_NAME}:${env.BUILD_NUMBER}", "${BACKEND_DIR}")
-                    // Also tag it as latest for convenience
-                    sh "docker tag ${IMAGE_NAME}:${env.BUILD_NUMBER} ${IMAGE_NAME}:latest"
-                }
+                echo "🔨 Building Docker image..."
+                sh "docker build -t ${env.IMAGE_NAME}:${env.BUILD_NUMBER} ${env.BACKEND_DIR}"
+                sh "docker tag ${env.IMAGE_NAME}:${env.BUILD_NUMBER} ${env.IMAGE_NAME}:latest"
             }
         }
 
         stage("Run Container") {
             steps {
-                script {
-                    echo "🚀 Starting container..."
-                    def appImage = docker.image("${IMAGE_NAME}:latest")
-                    // Run in detached mode, mapped port 8085, and passing the SERVER_PORT env var
-                    appImage.run("-d -p ${SERVER_PORT}:${SERVER_PORT} --name ${CONTAINER_NAME} -e SERVER_PORT=${SERVER_PORT}")
-                }
+                echo "🚀 Running container..."
+                sh "docker stop ${env.CONTAINER_NAME} || true"
+                sh "docker rm ${env.CONTAINER_NAME} || true"
+                sh "docker run -d -p ${env.SERVER_PORT}:${env.SERVER_PORT} --name ${env.CONTAINER_NAME} -e SERVER_PORT=${env.SERVER_PORT} ${env.IMAGE_NAME}:latest"
             }
         }
 
         stage("Test API") {
             steps {
-                script {
-                    echo "🧪 Running API test..."
-                    try {
-                        sh "curl -f http://localhost:${SERVER_PORT}/employees | jq"
-                    } catch (Exception e) {
-                        error("❌ API endpoint returned a non-200 status code.")
-                    }
-                }
+                echo "🧪 Testing API..."
+                sh "curl -f http://localhost:${env.SERVER_PORT}/employees | jq"
             }
         }
     }
 
     post {
         always {
-            script {
-                echo "🧹 Cleaning up only Jenkins-related Docker resources..."
-                // Stop & remove the container if it exists
-                sh "docker stop ${CONTAINER_NAME} || true"
-                sh "docker rm ${CONTAINER_NAME} || true"
-
-                // Remove ONLY the images we built
-                sh "docker rmi ${IMAGE_NAME}:${env.BUILD_NUMBER} || true"
-                sh "docker rmi ${IMAGE_NAME}:latest || true"
-            }
+            echo "🧹 Cleaning up Docker resources..."
+            sh "docker stop ${env.CONTAINER_NAME} || true"
+            sh "docker rm ${env.CONTAINER_NAME} || true"
+            sh "docker rmi ${env.IMAGE_NAME}:${env.BUILD_NUMBER} || true"
+            sh "docker rmi ${env.IMAGE_NAME}:latest || true"
         }
     }
 }
