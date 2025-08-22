@@ -36,7 +36,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 echo 'Deploying...'
-                sh 'docker-compose up -d --no-color --wait'
+                sh 'docker-compose up --build -d'
                 sh 'docker-compose ps'
             }
         }
