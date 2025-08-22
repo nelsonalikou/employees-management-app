@@ -22,10 +22,10 @@ pipeline {
         }
 
         stage('Build Backend') {
+            environment {
+                SERVER_PORT = '8081'
+            }
             steps {
-                environment {
-                    SERVER_PORT = '8081'
-                }
                 echo 'Building...'
                 dir("${env.BACKEND_DIR}") {
                     sh '''
