@@ -49,6 +49,7 @@ pipeline {
         stage("Build Docker Image") {
             steps {
                 echo "🔨 Building Docker image..."
+                sh "docker ps"
                 sh "docker-compose up --build -d"
             }
         }
