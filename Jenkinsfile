@@ -5,7 +5,11 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building...'
-                sh 'cd backend && ./mvnw clean package -DskipTests'
+                echo "Building..."
+                dir('backend') {
+                    sh 'chmod +x mvnw'
+                    sh './mvnw clean package -DskipTests'
+                }
             }
         }
         stage('Test') {
