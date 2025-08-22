@@ -32,15 +32,15 @@ pipeline {
         //     }
         // }
 
-        // stage('Unit Tests') {
-        //     steps {
-        //         echo 'Testing...'
-        //         sh '''
-        //             chmod +x mvnw
-        //             'cd backend && ./mvnw test'
-        //         '''
-        //     }
-        // }
+        stage('Unit Tests') {
+            steps {
+                echo 'Testing...'
+                sh '''
+                    chmod +x mvnw
+                    'cd backend && ./mvnw test'
+                '''
+            }
+        }
 
         stage("Build Docker Image") {
             steps {
