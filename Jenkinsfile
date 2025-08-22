@@ -64,6 +64,7 @@ pipeline {
     post {
         always {
             echo "🧹 Cleaning up Docker resources..."
+            sh "docker ps"
             sh "docker-compose down"
         }
     }
