@@ -51,7 +51,6 @@ pipeline {
                 echo "🔨 Building Docker image..."
                 sh "docker ps"
                 sh "docker-compose up --build -d"
-                echo "🧪 Testing API..."
                 sh "curl -f http://localhost:${env.SERVER_PORT}/employees | jq"
             }
         }
