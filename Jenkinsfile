@@ -49,7 +49,6 @@ pipeline {
         stage("Build Docker Image") {
             steps {
                 echo "🔨 Building Docker image..."
-                sh "docker ps"
                 sh "docker-compose up --build -d"
                 sh "curl -f http://localhost:${env.SERVER_PORT}/employees | jq"
             }
