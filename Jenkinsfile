@@ -49,8 +49,18 @@ pipeline {
         stage("Build Docker Image") {
             steps {
                 echo "🔨 Building Docker image..."
-                sh "docker-compose up --build -d"
-                sh "curl -f http://localhost:${env.SERVER_PORT}/employees | jq"
+                sh "docker build -t ${env.IMAGE_NAME}:${env.BUILD_NUMBER} ${env.BACKEND_DIR}"
+                sh "docker tag ${env.IMAGE_NAME}:${env.BUILD_NUMBER} ${env.IMAGE_NAME}:latest"
+            }
+        }
+
+        stage("Run Container") {
+            steps {
+                echo "🚀 Running container..."
+                sh "docker stop ${env.CONTAINER_NAME} || true"
+                sh "docker rm ${env.CONTAINER_NAME} || true"
+                sh "docker ps"
+                sh "docker run -d -p ${env.SERVER_PORT}:${env.SERVER_PORT} --name ${env.CONTAINER_NAME} -e SERVER_PORT=${env.SERVER_PORT} ${env.IMAGE_NAME}:latest"
             }
         }
 
@@ -71,8 +81,11 @@ pipeline {
     post {
         always {
             echo "🧹 Cleaning up Docker resources..."
-            sh "docker-compose down"
             sh "docker ps"
+            sh "docker stop ${env.CONTAINER_NAME} || true"
+            sh "docker rm ${env.CONTAINER_NAME} || true"
+            sh "docker rmi ${env.IMAGE_NAME}:${env.BUILD_NUMBER} || true"
+            sh "docker rmi ${env.IMAGE_NAME}:latest || true"
         }
     }
 }
