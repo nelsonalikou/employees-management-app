@@ -61,11 +61,11 @@ pipeline {
             }
         }
 
-        stage('Trigger Staging Job') {
-            steps {
-                build job: 'employees-management-app-staging', wait: true
-            }
-        }
+        // stage('Trigger Staging Job') {
+        //     steps {
+        //         build job: 'employees-management-app-staging', wait: true
+        //     }
+        // }
     }
 
     post {
